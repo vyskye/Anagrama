@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔤 ANAGRAMA · susun huruf</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(145deg, #1d5e3f 0%, #2f8a5c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+        }
+        .game-wrapper {
+            max-width: 700px;
+            width: 100%;
+            background: #faf2dd;
+            border-radius: 80px;
+            padding: 30px 25px 40px;
+            box-shadow: 0 35px 35px -12px #1a3a24;
+            border: 4px solid #b79454;
+        }
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #fcf0b5;
+            text-shadow: 5px 5px 0 #2d7a4f, 7px 7px 0 #0a2f1a;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .anagram-panel {
+            background: #2b8a5a;
+            border-radius: 70px;
+            padding: 30px 20px;
+            border: 3px solid #fad58b;
+            box-shadow: inset 0 -8px 0 #1a5a39;
+        }
+        .scrambled-word {
+            background: #fffbdf;
+            border-radius: 70px;
+            padding: 35px 15px;
+            text-align: center;
+            font-size: 4.2rem;
+            font-weight: 700;
+            letter-spacing: 18px;
+            text-transform: uppercase;
+            border: 5px solid #dba654;
+            box-shadow: inset 0 -10px 0 #bd9347;
+            margin-bottom: 25px;
+            word-break: break-all;
+            color: #1a4f32;
+        }
+        .letters-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            background: #3da06b;
+            padding: 30px 15px;
+            border-radius: 80px;
+            border: 3px solid #ffd98c;
+            margin: 25px 0 20px;
+        }
+        .letter-tile {
+            background: #fff8cf;
+            width: 85px;
+            height: 85px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.2rem;
+            font-weight: 800;
+            border-radius: 40px;
+            box-shadow: 0 10px 0 #7b623c;
+            color: #1b4d31;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.06s;
+            border: 3px solid #f7d58e;
+        }
+        .letter-tile:active {
+            transform: translateY(8px);
+            box-shadow: 0 3px 0 #6a4f30;
+        }
+        .letter-tile.placed {
+            opacity: 0.4;
+            box-shadow: 0 3px 0 #5d472b;
+            transform: translateY(7px);
+            pointer-events: none;
+            background: #a7bfa7;
+        }
+        .current-build {
+            background: #1f6742;
+            color: #fff2c2;
+            padding: 25px;
+            border-radius: 70px;
+            font-size: 3.8rem;
+            letter-spacing: 14px;
+            text-align: center;
+            min-height: 120px;
+            border: 3px solid #f1c27a;
+            margin: 20px 0;
+            text-transform: uppercase;
+            word-break: break-all;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 25px 0 15px;
+        }
+        .anagram-btn {
+            background: #ffd894;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.9rem;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #a88143;
+            transition: 0.06s;
+            border: 2px solid #fbe3af;
+            flex: 0 1 auto;
+        }
+        .anagram-btn:active {
+            transform: translateY(7px);
+            box-shadow: 0 2px 0 #8a6737;
+        }
+        .feedback-message {
+            font-size: 2.2rem;
+            text-align: center;
+            background: #1a5837;
+            padding: 20px;
+            border-radius: 70px;
+            color: #fdebba;
+            border: 3px solid #dba95c;
+            margin-top: 20px;
+        }
+        .footer-note {
+            text-align: center;
+            color: #c7b181;
+            margin-top: 20px;
+            font-size: 1.4rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-wrapper">
+        <h1>🔤 ANAGRAMA</h1>
+        <div class="anagram-panel">
+            <div class="scrambled-word" id="scrambledDisplay">H E L L O</div>
+            
+            <div class="letters-pool" id="letterTiles"></div>
+            <div class="current-build" id="buildWord">___</div>
+
+            <div class="action-buttons">
+                <button class="anagram-btn" id="checkBtn">✅ cek</button>
+                <button class="anagram-btn" id="resetBtn">🔄 acak kata</button>
+                <button class="anagram-btn" id="resetCurrentBtn">↩️ ulang</button>
+            </div>
+
+            <div class="feedback-message" id="anagramFeedback">🔤 susun huruf jadi kata</div>
+        </div>
+        <div class="footer-note">✏️ klik huruf, susun jadi kata</div>
+    </div>
+
+    <script>
+        const wordBank = [
+            { original: "HELLO", hint: "sapaan" },
+            { original: "WORLD", hint: "dunia" },
+            { original: "GAME", hint: "permainan" },
+            { original: "HURUF", hint: "alfabet" },
+            { original: "KUCING", hint: "hewan berbulu" },
+            { original: "MOBIL", hint: "kendaraan" },
+            { original: "BUKU", hint: "bacaan" },
+            { original: "POHON", hint: "tumbuhan besar" },
+            { original: "AYAM", hint: "unggas" },
+            { original: "SAPI", hint: "hewan ternak" },
+            { original: "RUMAH", hint: "tempat tinggal" },
+            { original: "SEKOLAH", hint: "tempat belajar" }
+        ];
+
+        let currentWordObj = null;
+        let shuffledLetters = [];
+        let placedIndexes = [];
+        let userWord = [];
+
+        const scrambledDisplay = document.getElementById('scrambledDisplay');
+        const letterTilesDiv = document.getElementById('letterTiles');
+        const buildWordDiv = document.getElementById('buildWord');
+        const feedbackDiv = document.getElementById('anagramFeedback');
+        const checkBtn = document.getElementById('checkBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const resetCurrentBtn = document.getElementById('resetCurrentBtn');
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function shuffleWord(word) {
+            return shuffleArray(word.split(''));
+        }
+
+        function pickRandomWord() {
+            const randIdx = Math.floor(Math.random() * wordBank.length);
+            return { ...wordBank[randIdx] };
+        }
+
+        function initNewGame() {
+            currentWordObj = pickRandomWord();
+            shuffledLetters = shuffleWord(currentWordObj.original);
+            placedIndexes = [];
+            userWord = [];
+            renderAll();
+            feedbackDiv.innerHTML = `🔤 petunjuk: ${currentWordObj.hint}`;
+        }
+
+        function renderAll() {
+            if (!currentWordObj) return;
+
+            scrambledDisplay.textContent = shuffledLetters.join(' ');
+
+            letterTilesDiv.innerHTML = '';
+            for (let i = 0; i < shuffledLetters.length; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'letter-tile';
+                if (placedIndexes.includes(i)) {
+                    tile.classList.add('placed');
+                }
+                tile.textContent = shuffledLetters[i];
+                tile.dataset.index = i;
+
+                tile.addEventListener('click', (e) => {
+                    const idx = parseInt(e.currentTarget.dataset.index, 10);
+                    if (placedIndexes.includes(idx)) return;
+
+                    userWord.push(shuffledLetters[idx]);
+                    placedIndexes.push(idx);
+                    buildWordDiv.textContent = userWord.join(' ') || '___';
+                    e.currentTarget.classList.add('placed');
+                });
+
+                letterTilesDiv.appendChild(tile);
+            }
+
+            buildWordDiv.textContent = userWord.length > 0 ? userWord.join(' ') : '___';
+        }
+
+        function resetCurrentLayout() {
+            if (!currentWordObj) return;
+            placedIndexes = [];
+            userWord = [];
+            renderAll();
+            feedbackDiv.innerHTML = `🔤 petunjuk: ${currentWordObj.hint}`;
+        }
+
+        function checkAnswer() {
+            if (!currentWordObj) return;
+            const attempt = userWord.join('');
+            if (attempt === currentWordObj.original) {
+                feedbackDiv.innerHTML = '🎉 BENAR! hebat sekali!';
+            } else {
+                feedbackDiv.innerHTML = `❌ masih salah. petunjuk: ${currentWordObj.hint}`;
+            }
+        }
+
+        checkBtn.addEventListener('click', checkAnswer);
+        resetBtn.addEventListener('click', initNewGame);
+        resetCurrentBtn.addEventListener('click', resetCurrentLayout);
+
+        initNewGame();
+    </script>
+</body>
+</html>
